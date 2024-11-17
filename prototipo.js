@@ -63,10 +63,10 @@ class Agenda{
         
     }
     ordenarContactos(opcionOrdenar){
-        switch(OpcionOrdenar){
+        switch(opcionOrdenar){
             //Se ordenara por indice alfabetico de acuerdo al nombre
             case 'ordenarPorNombre':
-                
+                this.contactos.sort((contactoA,contactoB)=>contactoA.nombre.localeCompare(contactoB.nombre))
                 break;
 
             case 'ordenarPorCorreo':
@@ -74,9 +74,22 @@ class Agenda{
                 //los que tiene dominio @azc.uam.mx iran primero
                 //por ejemplo para los que tiene dominio @outlook.com.mx iran segundo,
                 //los que tenga dominio @gmail.com.mx iran tercero 
-              
+                this.contactos.sort((contactoA, contactoB) => {
+                    const dominioA = contactoA.correo.split('@')[1];
+                    const dominioB = contactoB.correo.split('@')[1];
+                    //Se manda el resultado de la comparación
+                    return dominioA.localeCompare(dominioB);
+                });
                 break;
             case 'ordenarPorLada':
+                this.contactos.sort((contactoA, contactoB) => {
+                    //Se extrae la lada de los dos primero disgitos del numero
+                    const ladaA = contactoA.telPrincipal.substring(0,2);
+                    const ladaB = contactoB.telPrincipal.substring(0,2);
+                    //Se envia la comparacion de ambas ladas lexicograficamente
+                    return ladaA.localeCompare(ladaB);
+                });
+
                 break;
             
         
