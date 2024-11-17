@@ -141,6 +141,10 @@ agenda.cargarArchivosContacto();
 const service = {
     AgendaService:{
         AgendaPort: {
+            ObtenerAgenda: function (args, callback) {
+                return {
+                    contactList: agenda
+                },
             AgregarContacto: function(args, callback) {
                 const { nombre, telPrincipal, telCelular, correo } = args;
                 const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
@@ -183,7 +187,7 @@ const wsdl= fs.readFileSync(wsdlPath, 'utf8');
 
 app.listen(PORT, ()=>{
     soap.listen(app, '/calculator', service, wsdl);
-    console.log('Servicio SOAP corriendo en http://192.168.0.213:3000/calculator');
+    console.log('Servicio SOAP corriendo en http://192.168.0.213:3000/agenda');
 });
 
 

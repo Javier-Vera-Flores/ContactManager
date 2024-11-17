@@ -7,6 +7,7 @@
 
     <types>
         <xs:schema targetNamespace="http://www.example.org/agenda">
+            
             <!-- Tipo para un contacto -->
             <xs:element name="Contact">
                 <xs:complexType>
@@ -18,7 +19,18 @@
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
+            <!-- Operacion de carga de agenda -->
+            <xs:element name="ObtenerAgenda">
+                <xs:complexType/>
+            </xs:element>
 
+            <xs:element name="ObtenerAgendaResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="contactList" type="tns:Contact" minOccurs="0" maxOccurs="unbounded"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
             <!-- Operaciones para la agenda -->
             <xs:element name="AgregarContacto">
                 <xs:complexType>
@@ -104,6 +116,14 @@
     </types>
 
     <!-- Mensajes para cada operación -->
+    <message name="ObtenerAgendaRequest">
+          <part name="parameters" element="tns:ObtenerAgenda"/>
+    </message>
+
+    <message name="ObtenerAgendaResponse">
+        <part name="parameters" element="tns:ObtenerAgendaResponse"/>
+    </message>
+
     <message name="AgregarContactoRequest">
         <part name="parameters" element="tns:AgregarContacto"/>
     </message>
@@ -142,6 +162,12 @@
 
     <!-- Se definen las operaciones -->
     <portType name="AgendaPortType">
+
+        <operation name="ObtenerAgenda">
+            <input message="tns:ObtenerAgendaRequest"/>
+            <output message="tns:ObtenerAgendaResponse"/>
+        </operation>
+
         <operation name="AgregarContacto">
             <input message="tns:AgregarContactoRequest"/>
             <output message="tns:AgregarContactoResponse"/>
@@ -171,6 +197,12 @@
 
     <binding name="AgendaBinding" type="tns:AgendaPortType">
         <soap12:binding style="rpc" transport="http://www.w3.org/2003/05/soap/bindings/HTTP/"/>
+
+        <operation name="ObtenerAgenda">
+            <soap12:operation soapAction="http://www.example.org/agenda/ObtenerAgenda"/>
+            <input><soap12:body use="literal"/></input>
+            <output><soap12:body use="literal"/></output>
+        </operation>
 
         <operation name="AgregarContacto">
             <soap12:operation soapAction="http://www.example.org/agenda/AgregarContacto"/>
@@ -210,5 +242,7 @@
         <port name="AgendaPort" binding="tns:AgendaBinding">
             <soap12:address location="http://localhost:3000/agenda"/>
         </port>
+    </service>
+</definitions>
    
 
