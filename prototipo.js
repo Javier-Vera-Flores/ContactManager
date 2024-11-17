@@ -62,7 +62,25 @@ class Agenda{
         }
         
     }
-    ordenarContactos(parametro1, parametro2){
+    ordenarContactos(opcionOrdenar){
+        switch(OpcionOrdenar){
+            //Se ordenara por indice alfabetico de acuerdo al nombre
+            case 'ordenarPorNombre':
+                
+                break;
+
+            case 'ordenarPorCorreo':
+                //Se ordenara de acuerdo al dominio del correo
+                //los que tiene dominio @azc.uam.mx iran primero
+                //por ejemplo para los que tiene dominio @outlook.com.mx iran segundo,
+                //los que tenga dominio @gmail.com.mx iran tercero 
+              
+                break;
+            case 'ordenarPorLada':
+                break;
+            
         
+            
+        }
     }
 }
