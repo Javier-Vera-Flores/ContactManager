@@ -6,46 +6,175 @@ const path = require('path');
 const app = express();
 const PORT = 3000;                                      //Puerto para usarse
 
-const service =  {                                      //Creacion de un servicio
-    CalculatorService: {                                //Serivicio a utilizar
-        CalculatorPort: {                               //Puerto del servicio que se utiliza
-            Add: function(args, callback){              //Uso de funcionalidad del servicio
-                const intA = args.intA;                 //Asignacion en constantes
-                const intB = args.intB;                 //Arriba x2
-                const result=intA+intB;                 //Lo que hace el servicio
-                callback(null, {AddResult: result});    //Regresa null si esta vacio, en caso contrario el resultado del servicio
-            },
-            Sub: function(args, callback){
-                const intA = args.intA;
-                const intB = args.intB;
-                const result = intA - intB;
-                callback(null, {SubResult: result});
-            },
-            Mult: function(args, callback){
-                const intA = args.intA;
-                const intB = args.intB;
-                const result = intA * intB;
-                callback(null,{MultResult: result});
-            },
-            Div: function(args, callback){
-                const intA = args.intA;
-                const intB = args.intB;
+//Se definie la logica del servicio de la agenda
+class Contacto{
+    constructor(nombre, telPrincipal, telCelular, correo){
+        this.nombre = nombre;
+        this. telPrincipal = telPrincipal;
+        this.telCelular = telCelular;
+        this.correo = correo;
+    }
+}
+class Agenda{
+    constructor(){
+        //definimos un array para almacenar los contactos
+        this.contactos = [];
+    }
+    cargarArchivosContacto(){
+        //cargamos el archivo
+        const data = fs.readFileSync('Directory.csv','utf8');
+        const lineas = data.split('\n'); //cada salto de linea es una linea
+        
+
+        //nombre !== null && nombre !== undefined && telPrincipal !== null && telPrincipal !== undefined &&  telCelular !== null && telCelular !== undefined && correo !== null && correo !== undefined)
+        //El programa se ejecuta solo si todos los campos son validos
+        lineas.forEach(linea =>{
+
+            //Desestructuramos el array
+            const [nombre, telPrincipal, telCelular, correo] = linea.split(',');
+            
+            if(nombre && telPrincipal && telCelular && correo){
                 
-                //veremos que el denominador intB no sea igual a cero
-                if(intB == 0){
-                    //enviaremos un mensaje de error usando
-                    callback({faultcode: 'SOAP-ENV:Server',
-                        faultstring: 'Error: División por cero no permitida.'});
-                    //callback({ faultString: 'Error: División por cero no permitida' });    
-                }else{
-                    const result = intA / intB;
-                    callback(null,{DivResult: result});
+                //Creamos un nuevo contacto
+                const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
+    
+                //añadimos el nuevo contacto a la agenda:
+                //ocupamos el metodo de agregar que abajo creamos para añadir a la Agenda
+                this.agregarContacto(contacto);
+    
+    
+            }
+        });
+    }
+    agregarContacto(contacto){
+        this.contactos.push(contacto);
+    }
+    //se crea metodo para buscar contacto por nombre
+    buscarContacto(nombre){
+        //Se recorre todo la agenda de contactos
+        let contactoEncontrado = this.contactos.find(contacto => contacto.nombre == nombre);
+        if(contactoEncontrado == undefined){
+            console.log("Contacto no encontrado");
+            return;
+        }
+        return contactoEncontrado;
+    }
+    eliminarContacto(nombre){
+        const index = this.contactos.findIndex(contacto => contacto.nombre == nombre);
+        if(index != -1){
+            this.contactos.splice(index,1);
+        }
+    }
+    editarContacto(nombre, datoAModificar, opcionModificar){
+        /*¨
+            opciones de moficación
+            1. nombre
+            2. telPrincipal
+            3. telCelular
+            4. correo
+        
+        */
+        let contactoAModificar = this.buscarContacto(nombre);
+        if(contactoAModificar == undefined){
+            // Se envia mensaje de contacto no encontrado
+            console.log("Contacto no encontrado");
+            return;
+        }
+   
+        switch(opcionModificar){
+            case 1:
+                contactoAModificar.nombre = datoAModificar;
+                break;
+            case 2: 
+                contactoAModificar.telPrincipal = datoAModificar;
+                break;
+            case 3:
+                contactoAModificar.telCelular = datoAModificar;
+                break;
+            case 4:
+                contactoAModificar.correo = datoAModificar;
+                break;
+        }
+        
+    }
+    ordenarContactos(opcionOrdenar){
+        switch(opcionOrdenar){
+            //Se ordenara por indice alfabetico de acuerdo al nombre
+            case 'ordenarPorNombre':
+                this.contactos.sort((contactoA,contactoB)=>contactoA.nombre.localeCompare(contactoB.nombre))
+                break;
+
+            case 'ordenarPorCorreo':
+                //Se ordenara de acuerdo al dominio del correo
+                //los que tiene dominio @azc.uam.mx iran primero
+                //por ejemplo para los que tiene dominio @outlook.com.mx iran segundo,
+                //los que tenga dominio @gmail.com.mx iran tercero 
+                this.contactos.sort((contactoA, contactoB) => {
+                    const dominioA = contactoA.correo.split('@')[1];
+                    const dominioB = contactoB.correo.split('@')[1];
+                    //Se manda el resultado de la comparación
+                    return dominioA.localeCompare(dominioB);
+                });
+                break;
+            case 'ordenarPorLada':
+                this.contactos.sort((contactoA, contactoB) => {
+                    //Se extrae la lada de los dos primero disgitos del numero
+                    const ladaA = contactoA.telPrincipal.substring(0,2);
+                    const ladaB = contactoB.telPrincipal.substring(0,2);
+                    //Se envia la comparacion de ambas ladas lexicograficamente
+                    return ladaA.localeCompare(ladaB);
+                });
+
+                break;
+            
+        
+            
+        }
+    }
+}
+// Se crea una instancia de agenda
+const agenda = new Agenda();
+//Se cargan los contactos de la agenda
+agenda.cargarArchivosContacto();
+
+//Se define el servicio a utilizar mediante SOAP
+const service = {
+    AgendaService:{
+        AgendaPort: {
+            agregarContacto: function(args, callback) {
+                const { nombre, telPrincipal, telCelular, correo } = args;
+                const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
+                agenda.agregarContacto(contacto);
+                callback(null, { status: 'Contacto agregado' });
+            },
+            buscarContacto: function(args, callback) {
+                const { nombre } = args;
+                const contacto = agenda.buscarContacto(nombre);
+                if (contacto) {
+                    callback(null, contacto);
+                } else {
+                    callback({ faultcode: 'SOAP-ENV:Server', faultstring: 'Contacto no encontrado' });
                 }
+            },
+            eliminarContacto: function(args, callback) {
+                const { nombre } = args;
+                agenda.eliminarContacto(nombre);
+                callback(null, { status: 'Contacto eliminado' });
+            },
+            editarContacto: function(args, callback) {
+                const { nombre, datoAModificar, opcionModificar } = args;
+                agenda.editarContacto(nombre, datoAModificar, opcionModificar);
+                callback(null, { status: 'Contacto editado' });
+            },
+            ordenarContactos: function(args, callback) {
+                const { opcionOrdenar } = args;
+                agenda.ordenarContactos(opcionOrdenar);
+                callback(null, { status: 'Contactos ordenados' });
             }
         }
-
     }
-};
+
+}
 
 
 const wsdlPath = path.join(__dirname, 'requirements.wsdl');

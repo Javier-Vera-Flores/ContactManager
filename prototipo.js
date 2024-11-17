@@ -1,3 +1,4 @@
+const fs = require('fs');
 class Contacto{
     constructor(nombre, telPrincipal, telCelular, correo){
         this.nombre = nombre;
@@ -10,6 +11,32 @@ class Agenda{
     constructor(){
         //definimos un array para almacenar los contactos
         this.contactos = [];
+    }
+    cargarArchivosContacto(){
+        //cargamos el archivo
+        const data = fs.readFileSync('Directory.csv','utf8');
+        const lineas = data.split('\n'); //cada salto de linea es una linea
+        
+
+        //nombre !== null && nombre !== undefined && telPrincipal !== null && telPrincipal !== undefined &&  telCelular !== null && telCelular !== undefined && correo !== null && correo !== undefined)
+        //El programa se ejecuta solo si todos los campos son validos
+        lineas.forEach(linea =>{
+
+            //Desestructuramos el array
+            const [nombre, telPrincipal, telCelular, correo] = linea.split(',');
+            
+            if(nombre && telPrincipal && telCelular && correo){
+                
+                //Creamos un nuevo contacto
+                const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
+    
+                //añadimos el nuevo contacto a la agenda:
+                //ocupamos el metodo de agregar que abajo creamos para añadir a la Agenda
+                this.agregarContacto(contacto);
+    
+    
+            }
+        });
     }
     agregarContacto(contacto){
         this.contactos.push(contacto);
