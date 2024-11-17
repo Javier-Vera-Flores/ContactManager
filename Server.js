@@ -21,30 +21,34 @@ class Agenda{
         this.contactos = [];
     }
     cargarArchivosContacto(){
-        //cargamos el archivo
-        const data = fs.readFileSync('Directory.csv','utf8');
-        const lineas = data.split('\n'); //cada salto de linea es una linea
-        
-
-        //nombre !== null && nombre !== undefined && telPrincipal !== null && telPrincipal !== undefined &&  telCelular !== null && telCelular !== undefined && correo !== null && correo !== undefined)
-        //El programa se ejecuta solo si todos los campos son validos
-        lineas.forEach(linea =>{
-
-            //Desestructuramos el array
-            const [nombre, telPrincipal, telCelular, correo] = linea.split(',');
+        try{
+                        //cargamos el archivo
+            const data = fs.readFileSync('Directory.csv','utf8');
+            const lineas = data.split('\n'); //cada salto de linea es una linea
             
-            if(nombre && telPrincipal && telCelular && correo){
+
+            //nombre !== null && nombre !== undefined && telPrincipal !== null && telPrincipal !== undefined &&  telCelular !== null && telCelular !== undefined && correo !== null && correo !== undefined)
+            //El programa se ejecuta solo si todos los campos son validos
+            lineas.forEach(linea =>{
+
+                //Desestructuramos el array
+                const [nombre, telPrincipal, telCelular, correo] = linea.split(',');
                 
-                //Creamos un nuevo contacto
-                const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
-    
-                //añadimos el nuevo contacto a la agenda:
-                //ocupamos el metodo de agregar que abajo creamos para añadir a la Agenda
-                this.agregarContacto(contacto);
-    
-    
-            }
-        });
+                if(nombre && telPrincipal && telCelular && correo){
+                    
+                    //Creamos un nuevo contacto
+                    const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
+        
+                    //añadimos el nuevo contacto a la agenda:
+                    //ocupamos el metodo de agregar que abajo creamos para añadir a la Agenda
+                    this.agregarContacto(contacto);
+        
+        
+                }
+            });
+        }catch(err){
+            console.error('Error al cargar el archivo de contactos',err.message);
+        }
     }
     agregarContacto(contacto){
         this.contactos.push(contacto);
@@ -141,10 +145,10 @@ agenda.cargarArchivosContacto();
 const service = {
     AgendaService:{
         AgendaPort: {
-            ObtenerAgenda: function (args, callback) {
-                return {
-                    contactList: agenda
-                },
+            ObtenerAgenda:  function(args,callback) {
+                callback(null, { contactList: agenda.contactos });
+            },
+        
             AgregarContacto: function(args, callback) {
                 const { nombre, telPrincipal, telCelular, correo } = args;
                 const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
@@ -178,17 +182,15 @@ const service = {
             }
         }
     }
-
-}
+    
+};
 
 
 const wsdlPath = path.join(__dirname, 'requirements.wsdl');
 const wsdl= fs.readFileSync(wsdlPath, 'utf8');
 
 app.listen(PORT, ()=>{
-    soap.listen(app, '/calculator', service, wsdl);
+    soap.listen(app, '/agenda', service, wsdl);
     console.log('Servicio SOAP corriendo en http://192.168.0.213:3000/agenda');
 });
-
-
 
