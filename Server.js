@@ -1,194 +1,196 @@
 const soap = require('soap');
-const readline = require('readline');
-const url = 'http://192.168.56.1:3000/calculator?wsdl';
+const express= require('express');
 
-// Definimos un interfaz para la captura de datos por teclado
-const rl = readline.Interface({
-    input: process.stdin,
-    output: process.stdout
-});
+const fs = require('fs');
+const path = require('path');
+const app = express();
+const PORT = 3000;                                      //Puerto para usarse
 
-// Se muestra un mensaje indicando que se cargó la lista de contactos
-// Se recibe del servidor una agenda para poderla imprimir los contactos en consola
-function imprimirAgenda(contactList) {
-    console.log('Agenda recibida:');
-    contactList.forEach((contact, index) => {
-        console.log(`Contacto ${index + 1}:`);
-        console.log(`  Nombre: ${contact.nombre}`);
-        console.log(`  Teléfono Principal: ${contact.telPrincipal}`);
-        console.log(`  Teléfono Celular: ${contact.telCelular}`);
-        console.log(`  Correo: ${contact.correo}`);
-        console.log("--------------------------------------------------");
-    });
-}
-
-// Se muestra el menú de opciones en agenda
-function mostrarMenu(){
-    console.log("1. AgregarContacto \n 2. EliminarContacto \n 3. BuscarContacto \n 4. EditarContacto \n 5. OrdenarContactos \n")
-    console.log("\t Ingresa tu opción \n")
-}
-
-// Captura los datos de un contacto a añadir
-function getContactInputs(callback) {
-    rl.question('Ingrese el nombre: ', (nombre) => {
-        rl.question('Ingrese el teléfono: ', (telefono) => {
-            rl.question('Ingrese el celular: ', (celular) => {
-                rl.question('Ingrese el correo: ', (correo) => {
-                    callback({ nombre, telefono, celular, correo });
-                });
-            });
-        });
-    });
-}
-
-// Función para manejar la opción seleccionada
-function manejarOpcion(opcion) {
-    switch(opcion) {
-        case '1':
-            agregarContacto();
-            break;
-        case '2':
-            eliminarContacto();
-            break;
-        case '3':
-            buscarContacto();
-            break;
-        case '4':
-            editarContacto();
-            break;
-        case '5':
-            ordenarContactos();
-            break;
-        default:
-            console.log("Opción no válida.");
-            preguntarOpcion();
+//Se definie la logica del servicio de la agenda
+class Contacto{
+    constructor(nombre, telPrincipal, telCelular, correo){
+        this.nombre = nombre;
+        this. telPrincipal = telPrincipal;
+        this.telCelular = telCelular;
+        this.correo = correo;
     }
 }
+class Agenda{
+    constructor(){
+        //definimos un array para almacenar los contactos
+        this.contactos = [];
+    }
+    cargarArchivosContacto(){
+        try{
+                        //cargamos el archivo
+            const data = fs.readFileSync('Directory.csv','utf8');
+            const lineas = data.split('\n'); //cada salto de linea es una linea
+            
 
-// Función para agregar un contacto
-function agregarContacto() {
-    getContactInputs((contacto) => {
-        // Crear un objeto Agenda con el nuevo contacto
-        const agenda = { contactList: [contacto] };
+            //nombre !== null && nombre !== undefined && telPrincipal !== null && telPrincipal !== undefined &&  telCelular !== null && telCelular !== undefined && correo !== null && correo !== undefined)
+            //El programa se ejecuta solo si todos los campos son validos
+            lineas.forEach(linea =>{
+
+                //Desestructuramos el array
+                const [nombre, telPrincipal, telCelular, correo] = linea.split(',');
+                
+                if(nombre && telPrincipal && telCelular && correo){
+                    
+                    //Creamos un nuevo contacto
+                    const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
         
-        // Llamar al servicio SOAP para agregar el contacto
-        client.AgregarContacto(agenda, (err, result) => {
-            if (err) {
-                console.error('Error al agregar contacto:', err);
-            } else {
-                console.log('Contacto agregado con éxito.');
-                preguntarOpcion();
-            }
-        });
-    });
-}
-
-// Función para eliminar un contacto
-function eliminarContacto() {
-    rl.question('Ingrese el nombre del contacto a eliminar: ', (nombre) => {
-        // Llamar al servicio SOAP para eliminar el contacto
-        client.EliminarContacto({ nombre }, (err, result) => {
-            if (err) {
-                console.error('Error al eliminar el contacto:', err);
-            } else {
-                console.log('Contacto eliminado con éxito.');
-                preguntarOpcion();
-            }
-        });
-    });
-}
-
-// Función para buscar un contacto
-function buscarContacto() {
-    rl.question('Ingrese el nombre del contacto a buscar: ', (nombre) => {
-        client.BuscarContacto({ nombre }, (err, result) => {
-            if (err) {
-                console.error('Error al buscar el contacto:', err);
-            } else {
-                if (result.contact) {
-                    console.log('Contacto encontrado:');
-                    console.log(`Nombre: ${result.contact.nombre}`);
-                    console.log(`Teléfono Principal: ${result.contact.telPrincipal}`);
-                    console.log(`Teléfono Celular: ${result.contact.telCelular}`);
-                    console.log(`Correo: ${result.contact.correo}`);
-                } else {
-                    console.log('Contacto no encontrado.');
+                    //añadimos el nuevo contacto a la agenda:
+                    //ocupamos el metodo de agregar que abajo creamos para añadir a la Agenda
+                    this.agregarContacto(contacto);
+        
+        
                 }
-                preguntarOpcion();
-            }
-        });
-    });
-}
-
-// Función para editar un contacto
-function editarContacto() {
-    rl.question('Ingrese el nombre del contacto a editar: ', (nombre) => {
-        client.BuscarContacto({ nombre }, (err, result) => {
-            if (err) {
-                console.error('Error al buscar el contacto:', err);
-            } else {
-                if (result.contact) {
-                    console.log('Contacto encontrado:');
-                    console.log(`Nombre: ${result.contact.nombre}`);
-                    console.log(`Teléfono Principal: ${result.contact.telPrincipal}`);
-                    console.log(`Teléfono Celular: ${result.contact.telCelular}`);
-                    console.log(`Correo: ${result.contact.correo}`);
-
-                    // Preguntar por los nuevos datos
-                    getContactInputs((nuevoContacto) => {
-                        // Llamar al servicio SOAP para editar el contacto
-                        client.EditarContacto({ nombre, nuevoContacto }, (err, result) => {
-                            if (err) {
-                                console.error('Error al editar el contacto:', err);
-                            } else {
-                                console.log('Contacto editado con éxito.');
-                            }
-                            preguntarOpcion();
-                        });
-                    });
-                } else {
-                    console.log('Contacto no encontrado.');
-                    preguntarOpcion();
-                }
-            }
-        });
-    });
-}
-
-// Función para ordenar los contactos (ejemplo de ordenación por nombre)
-function ordenarContactos() {
-    client.ObtenerAgenda({}, (err, result) => {
-        if (err) {
-            console.error('Error al obtener la agenda:', err);
-        } else {
-            result.contactList.sort((a, b) => a.nombre.localeCompare(b.nombre));
-            console.log('Agenda ordenada:');
-            imprimirAgenda(result.contactList);
-            preguntarOpcion();
+            });
+        }catch(err){
+            console.error('Error al cargar el archivo de contactos',err.message);
         }
-    });
-}
+    }
+    agregarContacto(contacto){
+        this.contactos.push(contacto);
+    }
+    //se crea metodo para buscar contacto por nombre
+    buscarContacto(nombre){
+        //Se recorre todo la agenda de contactos
+        let contactoEncontrado = this.contactos.find(contacto => contacto.nombre == nombre);
+        if(contactoEncontrado == undefined){
+            console.log("Contacto no encontrado");
+            return;
+        }
+        return contactoEncontrado;
+    }
+    eliminarContacto(nombre){
+        const index = this.contactos.findIndex(contacto => contacto.nombre == nombre);
+        if(index != -1){
+            this.contactos.splice(index,1);
+        }
+    }
+    editarContacto(nombre, datoAModificar, opcionModificar){
+        /*¨
+            opciones de moficación
+            1. nombre
+            2. telPrincipal
+            3. telCelular
+            4. correo
+        
+        */
+        let contactoAModificar = this.buscarContacto(nombre);
+        if(contactoAModificar == undefined){
+            // Se envia mensaje de contacto no encontrado
+            console.log("Contacto no encontrado");
+            return;
+        }
+   
+        switch(opcionModificar){
+            case 1:
+                contactoAModificar.nombre = datoAModificar;
+                break;
+            case 2: 
+                contactoAModificar.telPrincipal = datoAModificar;
+                break;
+            case 3:
+                contactoAModificar.telCelular = datoAModificar;
+                break;
+            case 4:
+                contactoAModificar.correo = datoAModificar;
+                break;
+        }
+        
+    }
+    ordenarContactos(opcionOrdenar){
+        switch(opcionOrdenar){
+            //Se ordenara por indice alfabetico de acuerdo al nombre
+            case 'ordenarPorNombre':
+                this.contactos.sort((contactoA,contactoB)=>contactoA.nombre.localeCompare(contactoB.nombre))
+                break;
 
-// Iniciar el ciclo de preguntas
-const preguntarOpcion = () => {
-    mostrarMenu();
-    rl.question('Seleccionar una opción: ', manejarOpcion);
+            case 'ordenarPorCorreo':
+                //Se ordenara de acuerdo al dominio del correo
+                //los que tiene dominio @azc.uam.mx iran primero
+                //por ejemplo para los que tiene dominio @outlook.com.mx iran segundo,
+                //los que tenga dominio @gmail.com.mx iran tercero 
+                this.contactos.sort((contactoA, contactoB) => {
+                    const dominioA = contactoA.correo.split('@')[1];
+                    const dominioB = contactoB.correo.split('@')[1];
+                    //Se manda el resultado de la comparación
+                    return dominioA.localeCompare(dominioB);
+                });
+                break;
+            case 'ordenarPorLada':
+                this.contactos.sort((contactoA, contactoB) => {
+                    //Se extrae la lada de los dos primero disgitos del numero
+                    const ladaA = contactoA.telPrincipal.substring(0,2);
+                    const ladaB = contactoB.telPrincipal.substring(0,2);
+                    //Se envia la comparacion de ambas ladas lexicograficamente
+                    return ladaA.localeCompare(ladaB);
+                });
+
+                break;
+            
+        
+            
+        }
+    }
+}
+// Se crea una instancia de agenda
+const agenda = new Agenda();
+//Se cargan los contactos de la agenda
+agenda.cargarArchivosContacto();
+
+//Se define el servicio a utilizar mediante SOAP
+const service = {
+    AgendaService:{
+        AgendaPort: {
+            ObtenerAgenda:  function(args,callback) {
+                callback(null, { contactList: agenda.contactos });
+            },
+        
+            AgregarContacto: function(args, callback) {
+                const { nombre, telPrincipal, telCelular, correo } = args;
+                const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
+                agenda.agregarContacto(contacto);
+                callback(null, { status: 'Contacto agregado' });
+            },
+            EliminarContacto: function(args, callback) {
+                const { nombre } = args;
+                agenda.eliminarContacto(nombre);
+                callback(null, { status: 'Contacto eliminado' });
+            },
+            BuscarContacto: function(args, callback) {
+                const { nombre } = args;
+                const contacto = agenda.buscarContacto(nombre);
+                if (contacto) {
+                    callback(null, contacto);
+                } else {
+                    callback({ faultcode: 'SOAP-ENV:Server', faultstring: 'Contacto no encontrado' });
+                }
+            },
+
+            EditarContacto: function(args, callback) {
+                const { nombre, datoAModificar, opcionModificar } = args;
+                agenda.editarContacto(nombre, datoAModificar, opcionModificar);
+                callback(null, { status: 'Contacto editado' });
+            },
+            OrdenarContactos: function(args, callback) {
+                const { opcionOrdenar } = args;
+                agenda.ordenarContactos(opcionOrdenar);
+                callback(null, { status: 'Contactos ordenados' });
+            }
+        }
+    }
+    
 };
 
-// Llamar a la operación ObtenerAgenda al inicio
-soap.createClient(url, (err, client) => {
-    if (err) {
-        console.error('Error al crear el cliente:', err);
-        return;
-    }
 
-    console.log('Cliente SOAP creado.');
-    client.ObtenerAgenda({}, (err, result) => {
-        if (err) {
-            console.error('Error al obtener la agenda:', err);
-        } else {
-            imprimirAgenda(result.contactList);
-            preguntarOpcion();
-        }
-    });
+const wsdlPath = path.join(__dirname, 'requirements.wsdl');
+const wsdl= fs.readFileSync(wsdlPath, 'utf8');
+
+app.listen(PORT, ()=>{
+    soap.listen(app, '/agenda', service, wsdl);
+    console.log('Servicio SOAP corriendo en http://192.168.0.213:3000/agenda');
 });
+
