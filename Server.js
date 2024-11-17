@@ -141,13 +141,18 @@ agenda.cargarArchivosContacto();
 const service = {
     AgendaService:{
         AgendaPort: {
-            agregarContacto: function(args, callback) {
+            AgregarContacto: function(args, callback) {
                 const { nombre, telPrincipal, telCelular, correo } = args;
                 const contacto = new Contacto(nombre, telPrincipal, telCelular, correo);
                 agenda.agregarContacto(contacto);
                 callback(null, { status: 'Contacto agregado' });
             },
-            buscarContacto: function(args, callback) {
+            EliminarContacto: function(args, callback) {
+                const { nombre } = args;
+                agenda.eliminarContacto(nombre);
+                callback(null, { status: 'Contacto eliminado' });
+            },
+            BuscarContacto: function(args, callback) {
                 const { nombre } = args;
                 const contacto = agenda.buscarContacto(nombre);
                 if (contacto) {
@@ -156,17 +161,13 @@ const service = {
                     callback({ faultcode: 'SOAP-ENV:Server', faultstring: 'Contacto no encontrado' });
                 }
             },
-            eliminarContacto: function(args, callback) {
-                const { nombre } = args;
-                agenda.eliminarContacto(nombre);
-                callback(null, { status: 'Contacto eliminado' });
-            },
-            editarContacto: function(args, callback) {
+
+            EditarContacto: function(args, callback) {
                 const { nombre, datoAModificar, opcionModificar } = args;
                 agenda.editarContacto(nombre, datoAModificar, opcionModificar);
                 callback(null, { status: 'Contacto editado' });
             },
-            ordenarContactos: function(args, callback) {
+            OrdenarContactos: function(args, callback) {
                 const { opcionOrdenar } = args;
                 agenda.ordenarContactos(opcionOrdenar);
                 callback(null, { status: 'Contactos ordenados' });

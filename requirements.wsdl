@@ -1,179 +1,214 @@
 <definitions xmlns="http://schemas.xmlsoap.org/wsdl/"
     xmlns:soap12="http://schemas.xmlsoap.org/wsdl/soap12/"
     xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    xmlns:tns="http://www.example.org/calculator"
-    name="CalculatorService"
-    targetNamespace="http://www.example.org/calculator">
-    
+    xmlns:tns="http://www.example.org/agenda"
+    name="AgendaService"
+    targetNamespace="http://www.example.org/agenda">
+
     <types>
-        <xs:schema targetNamespace="http://www.example.org/calculator">
-            <!-- types de la suma -->
-            <xs:element name="Add">
+        <xs:schema targetNamespace="http://www.example.org/agenda">
+            <!-- Tipo para un contacto -->
+            <xs:element name="Contact">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="intA" type="xs:int"/>
-                        <xs:element name="intB" type="xs:int"/>
+                        <xs:element name="nombre" type="xs:string"/>
+                        <xs:element name="telPrincipal" type="xs:string"/>
+                        <xs:element name="telCelular" type="xs:string"/>
+                        <xs:element name="correo" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
 
-            <xs:element name="AddResponse">
+            <!-- Operaciones para la agenda -->
+            <xs:element name="AgregarContacto">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="AddResult" type="xs:int"/>
+                        <xs:element name="contact" type="tns:Contact"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
 
-            <!-- tipos elementos usados para la resta -->
-
-
-            <xs:element name="Sub">
+            <xs:element name="AgregarContactoResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="intA" type="xs:int"/>
-                        <xs:element name="intB" type="xs:int"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="SubResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="SubResult" type="xs:int"/>
+                        <xs:element name="status" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
 
-            <!-- types usados  para la multiplicación -->
-            <xs:element name="Mult">
+            <xs:element name="EliminarContacto">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="intA" type="xs:int"/>
-                        <xs:element name="intB" type="xs:int"/>
-                    </xs:sequence>
-                </xs:complexType>
-            </xs:element>
-            <xs:element name="MultResponse">
-                <xs:complexType>
-                    <xs:sequence>
-                        <xs:element name="MultResult" type="xs:int"/>
+                        <xs:element name="contactName" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
 
-            <!-- Tipos usados  para la división -->
-            
-            <xs:element name="Div">
+            <xs:element name="EliminarContactoResponse">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="intA" type="xs:int"/>
-                        <xs:element name="intB" type="xs:int"/>
+                        <xs:element name="status" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
-            <xs:element name="DivResponse">
+
+            <xs:element name="BuscarContacto">
                 <xs:complexType>
                     <xs:sequence>
-                        <xs:element name="DivResult" type="xs:int"/>
+                        <xs:element name="contactName" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="BuscarContactoResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="contact" type="tns:Contact"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="EditarContacto">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="oldName" type="xs:string"/>
+                        <xs:element name="newContact" type="tns:Contact"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="EditarContactoResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="status" type="xs:string"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="OrdenarContactos">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="contactList" type="tns:Contact"/>
+                    </xs:sequence>
+                </xs:complexType>
+            </xs:element>
+
+            <xs:element name="OrdenarContactosResponse">
+                <xs:complexType>
+                    <xs:sequence>
+                        <xs:element name="status" type="xs:string"/>
                     </xs:sequence>
                 </xs:complexType>
             </xs:element>
         </xs:schema>
     </types>
 
-    <!-- Mensajes para cada solicitud de operacion una soliictu y una respuesta -->
-    <!--Este es para la suma ADD-->
-    <message name="AddRequest">
-        <part name="parameters" element="tns:Add"/>
+    <!-- Mensajes para cada operación -->
+    <message name="AgregarContactoRequest">
+        <part name="parameters" element="tns:AgregarContacto"/>
     </message>
-    <message name="AddResponse">
-        <part name="parameters" element="tns:AddResponse"/>
-    </message>
-
-<!--Este es para la resta Sub-->
-    <message name="SubRequest">
-        <part name="parameters" element="tns:Sub"/>
-    </message>
-    <message name="SubResponse">
-        <part name="parameters" element="tns:SubResponse"/>
+    <message name="AgregarContactoResponse">
+        <part name="parameters" element="tns:AgregarContactoResponse"/>
     </message>
 
-<!--Estos para la multipilicación nombrada mult-->
-    <message name="MultRequest">
-        <part name="parameters" element="tns:Mult"/>
+    <message name="EliminarContactoRequest">
+        <part name="parameters" element="tns:EliminarContacto"/>
     </message>
-    <message name="MultResponse">
-        <part name="parameters" element="tns:MultResponse"/>
-    </message>
-
-    <message name="DivRequest">
-        <part name="parameters" element="tns:Div"/>
-    </message>
-    <message name="DivResponse">
-        <part name="parameters" element="tns:DivResponse"/>
+    <message name="EliminarContactoResponse">
+        <part name="parameters" element="tns:EliminarContactoResponse"/>
     </message>
 
-    <!-- Se definen la operaciones .... -->
+    <message name="BuscarContactoRequest">
+        <part name="parameters" element="tns:BuscarContacto"/>
+    </message>
+    <message name="BuscarContactoResponse">
+        <part name="parameters" element="tns:BuscarContactoResponse"/>
+    </message>
 
-    <portType name="CalculatorPortType">
-        <operation name="Add">
-            <input message="tns:AddRequest"/>
-            <output message="tns:AddResponse"/>
+    <message name="EditarContactoRequest">
+        <part name="parameters" element="tns:EditarContacto"/>
+    </message>
+    <message name="EditarContactoResponse">
+        <part name="parameters" element="tns:EditarContactoResponse"/>
+    </message>
+
+
+    <message name="OrdenarContactosRequest">
+        <part name="parameters" element="tns:OrdenarContactos"/>
+    </message>
+    <message name="OrdenarContactosResponse">
+        <part name="parameters" element="tns:OrdenarContactosResponse"/>
+    </message>
+
+    <!-- Se definen las operaciones -->
+    <portType name="AgendaPortType">
+        <operation name="AgregarContacto">
+            <input message="tns:AgregarContactoRequest"/>
+            <output message="tns:AgregarContactoResponse"/>
+        </operation>
+
+        <operation name="EliminarContacto">
+            <input message="tns:EliminarContactoRequest"/>
+            <output message="tns:EliminarContactoResponse"/>
+        </operation>
+
+        <operation name="BuscarContacto">
+            <input message="tns:BuscarContactoRequest"/>
+            <output message="tns:BuscarContactoResponse"/>
+        </operation>
+
+        <operation name="EditarContacto">
+            <input message="tns:EditarContactoRequest"/>
+            <output message="tns:EditarContactoResponse"/>
         </operation>
 
 
-        <operation name="Sub">
-            <input message="tns:SubRequest"/>
-            <output message="tns:SubResponse"/>
-        </operation>
-
-        <operation name="Mult">
-            <input message="tns:MultRequest"/>
-            <output message="tns:MultResponse"/>
-        </operation>
-
-        <operation name="Div">
-            <input message="tns:DivRequest"/>
-            <output message="tns:DivResponse"/>
+        <operation name="OrdenarContactos">
+            <input message="tns:OrdenarContactosRequest"/>
+            <output message="tns:OrdenarContactosResponse"/>
         </operation>
     </portType>
 
-    <!-- Se incluye una descrpcion para cada operacion  -->
-
-    <binding name="CalculatorBinding" type="tns:CalculatorPortType">
+    <binding name="AgendaBinding" type="tns:AgendaPortType">
         <soap12:binding style="rpc" transport="http://www.w3.org/2003/05/soap/bindings/HTTP/"/>
-        
-        <operation name="Add">
-            <soap12:operation soapAction="http://www.example.org/calculator/Add"/>
-            <input><soap12:body use="literal"/></input>
-            <output><soap12:body use="literal"/></output>
-        </operation>
 
-        <operation name="Sub">
-            <soap12:operation soapAction="http://www.example.org/calculator/Sub"/>
+        <operation name="AgregarContacto">
+            <soap12:operation soapAction="http://www.example.org/agenda/AgregarContacto"/>
             <input><soap12:body use="literal"/></input>
             <output><soap12:body use="literal"/></output>
         </operation>
 
 
-        <operation name="Mult">
-            <soap12:operation soapAction="http://www.example.org/calculator/Mult"/>
+        <operation name="EliminarContacto">
+            <soap12:operation soapAction="http://www.example.org/agenda/EliminarContacto"/>
             <input><soap12:body use="literal"/></input>
             <output><soap12:body use="literal"/></output>
         </operation>
 
-        <operation name="Div">
-            <soap12:operation soapAction="http://www.example.org/calculator/Div"/>
+        <operation name="BuscarContacto">
+            <soap12:operation soapAction="http://www.example.org/agenda/BuscarContacto"/>
+            <input><soap12:body use="literal"/></input>
+            <output><soap12:body use="literal"/></output>
+        </operation>
+
+        <operation name="EditarContacto">
+            <soap12:operation soapAction="http://www.example.org/agenda/EditarContacto"/>
+            <input><soap12:body use="literal"/></input>
+            <output><soap12:body use="literal"/></output>
+        </operation>
+
+
+        <operation name="OrdenarContactos">
+            <soap12:operation soapAction="http://www.example.org/agenda/OrdenarContactos"/>
             <input><soap12:body use="literal"/></input>
             <output><soap12:body use="literal"/></output>
         </operation>
 
     </binding>
 
-    <!-- Se mostrar el URL del servicio calculadora asociada al puerto 3000 -->
-    <service name="CalculatorService">
-        <port name="CalculatorPort" binding="tns:CalculatorBinding">
-            <soap12:address location="http://192.168.0.213:3000/calculator"/>
+    <service name="AgendaService">
+        <port name="AgendaPort" binding="tns:AgendaBinding">
+            <soap12:address location="http://localhost:3000/agenda"/>
         </port>
-    </service>
-</definitions>
+   
+
